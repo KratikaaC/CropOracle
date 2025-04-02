@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Environment files
+.env
+venv/
+
+# OS/Editor files
+.DS_Store
+.idea/
+
+# Data files (optional - exclude if you want to track CSV files)
+*.csv
+!processed_crop_data.csv  # Keep this CSV even if others are ignored
