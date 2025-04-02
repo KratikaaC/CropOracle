@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CropOracle</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      z-index: 1000;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+
+    header.scrolled {
+      background-color: rgba(0, 50, 0, 0.95);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .logo img {
+      width: 50px;
+      height: 50px;
+      margin-right: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover img {
+      transform: rotate(15deg);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      margin-left: 1.5rem;
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #28a745;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -5px;
+      left: 0;
+      background-color: #28a745;
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    section {
+      height: 100vh;
+      padding-top: 80px;
+      box-sizing: border-box;
+      color: white;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), 
+                 transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform, opacity;
+    }
+
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    h1, h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+    }
+
+    #home {
+      background: url('/static/image4.jpg') center/cover no-repeat;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    #home h1 {
+      font-size: 3rem;
+      font-weight: 600;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 1rem;
+    }
+
+    #home h1 img {
+      width: 60px;
+      height: 60px;
+      transition: transform 0.5s ease;
+    }
+
+    #home h1:hover img {
+      transform: scale(1.1) rotate(10deg);
+    }
+
+    #home p {
+      font-size: 1.3rem;
+      margin-top: 1rem;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      max-width: 600px;
+      padding: 0 20px;
+    }
+
+    #predict {
+      background-color: #032D21;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 120px;
+    }
+
+    #predict h2 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    #predict form {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+      gap: 1rem;
+    }
+
+    #predict input {
+      padding: 0.7rem;
+      border: none;
+      border-radius: 4px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    #predict input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #28a745;
+    }
+
+    #predict button {
+      padding: 0.7rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #28a745;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #predict button:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #predict button:active {
+      transform: translateY(0);
+    }
+
+    .spinner {
+      display: none;
+      width: 40px;
+      height: 40px;
+      margin: 20px auto;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid #28a745;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #result {
+      display: none;
+      background-color: rgba(40, 167, 69, 0.2);
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+      text-align: center;
+      border: 1px solid #28a745;
+      font-weight: 500;
+    }
+
+    #login {
+      background-color: #367C2B;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      padding-top: 120px;
+    }
+
+    .login-left {
+      max-width: 500px;
+      margin: 2rem;
+    }
+
+    .login-left form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .login-left input {
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 4px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .login-left input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #032D21;
+    }
+
+    .login-left small {
+      font-size: 0.7rem;
+      color: #ccc;
+    }
+
+    .login-right {
+      max-width: 400px;
+      margin: 2rem;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .login-subtext {
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      font-weight: 300;
+    }
+
+    #contact {
+      background-color: #001D00;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding-bottom: 100px;
+    }
+
+    #contact h2 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+
+    #contact p {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+    }
+
+    #contact .footer-logo {
+      position: absolute;
+      bottom: 4rem;
+      font-size: 1rem;
+      opacity: 1;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    #contact .footer-logo img {
+      width: 30px;
+      margin-right: 10px;
+      transition: transform 0.3s ease;
+    }
+
+    #contact .footer-logo:hover img {
+      transform: rotate(15deg);
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0, 50, 0, 0.6);
+      color: white;
+      text-align: center;
+      padding: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+
+    footer:hover {
+      background: rgba(0, 100, 0, 0.9);
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 768px) {
+      #home h1 {
+        font-size: 2rem;
+        flex-direction: column;
+      }
+      
+      #home h1 img {
+        margin-bottom: 15px;
+      }
+      
+      #predict form {
+        width: 90%;
+      }
+      
+      #login {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .login-left, .login-right {
+        margin: 1rem;
+        text-align: center;
+      }
+      
+      #contact .footer-logo {
+        bottom: 3rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">
+      <img src="/static/Logo1.png" alt="logo">
+      CropOracle
+    </div>
+    <nav>
+      <a href="#predict">Predict</a>
+      <a href="#login">Login</a>
+      <a href="#contact">Contact Us</a>
+    </nav>
+  </header>
+
+  <section id="home">
+    <h1><img src="/static/Logo1.png" alt="logo">CropOracle</h1>
+    <p>Get accurate crop suggestions tailored to your soil & climate.</p>
+  </section>
+
+  <section id="predict">
+    <h2>Prediction Panel</h2>
+    <form id="predictionForm">
+      <input type="number" name="P" placeholder="Phosphorus (P)" required>
+      <input type="number" name="K" placeholder="Potassium (K)" required>
+      <input type="number" name="temperature" placeholder="Temperature (°C)" required>
+      <input type="number" name="humidity" placeholder="Humidity (%)" required>
+      <button type="submit">Submit</button>
+      <div id="spinner" class="spinner"></div>
+      <div id="result"></div>
+    </form>
+  </section>
+
+  <section id="login">
+    <div class="login-left">
+      <form>
+        <input type="email" placeholder="Email" required>
+        <input type="text" placeholder="First name" required>
+        <input type="text" placeholder="Last name" required>
+        <small>This Crop Advisory website is designed to offer guidance and recommendations based on crop types, seasonal patterns, and environmental factors. It aims to assist users in making informed decisions related to crop planning and management.
+          <br><br>
+          This platform does not collect, store, or process any personal data. All interactions remain entirely anonymous, and no information is shared with third parties.</small>
+      </form>
+    </div>
+    <div class="login-right">
+      Sign Up for CropOracle updates.
+      <div class="login-subtext">Get the latest tech delivered to your inbox.</div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <h2>Contact Us</h2>
+    <p>Email: support@croporacle.com</p>
+    <p>Phone: +91-00000-00000</p>
+    <div class="footer-logo">
+      <img src="/static/Logo1.png" alt="logo"> CropOracle
+    </div>
+  </section>
+
+  <footer onclick="location.href='#predict';">
+    Choose your crop >
+  </footer>
+
+  <script>
+    // Intersection Observer for section animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { 
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    });
+
+    // Observe all sections
+    document.querySelectorAll('section').forEach(section => {
+        observer.observe(section);
+    });
+
+    // Navbar background change on scroll
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        header.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Form submission with spinner and result
+    document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const spinner = document.getElementById('spinner');
+        const result = document.getElementById('result');
+        
+        // Show spinner
+        spinner.style.display = 'block';
+        result.style.display = 'none';
+        
+        try {
+            // Send to Flask backend with proper encoding
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(new FormData(e.target))
+            });
+
+            const responseData = await response.json();
+            
+            // Hide spinner
+            spinner.style.display = 'none';
+            
+            if (responseData.status === 'success') {
+                result.innerHTML = `✅ <strong>Recommended Crop:</strong> ${responseData.prediction}`;
+                result.style.backgroundColor = 'rgba(40, 167, 69, 0.2)';
+                result.style.borderColor = '#28a745';
+                result.style.color = '#28a745';
+            } else {
+                result.innerHTML = `❌ <strong>Error:</strong> ${responseData.message}`;
+                result.style.backgroundColor = 'rgba(220, 53, 69, 0.2)';
+                result.style.borderColor = '#dc3545';
+                result.style.color = '#dc3545';
+            }
+            
+            result.style.display = 'block';
+            result.scrollIntoView({ behavior: 'smooth' });
+            
+        } catch (error) {
+            spinner.style.display = 'none';
+            result.innerHTML = `❌ <strong>Network Error:</strong> ${error.message}`;
+            result.style.backgroundColor = 'rgba(220, 53, 69, 0.2)';
+            result.style.borderColor = '#dc3545';
+            result.style.color = '#dc3545';
+            result.style.display = 'block';
+        }
+    });
+
+    // Trigger initial animations
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('section').forEach(section => {
+            if (section.getBoundingClientRect().top < window.innerHeight * 0.75) {
+                section.classList.add('visible');
+                observer.unobserve(section);
+            }
+        });
+    });
+  </script>
+</body>
+</html>
