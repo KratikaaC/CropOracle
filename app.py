@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, jsonify
 import joblib
 import numpy as np
 import os
-from pyngrok import ngrok  # Optional (for public URL)
 
 app = Flask(__name__)
 
@@ -41,11 +40,6 @@ def predict():
         return jsonify({'status': 'error', 'message': str(e)}), 400
 
 if __name__ == "__main__":
-    # Optional: Ngrok tunnel (comment out if unused)
-    try:
-        ngrok_tunnel = ngrok.connect(5000)
-        print(" * Public URL:", ngrok_tunnel.public_url)
-    except:
-        print(" * Ngrok not configured. Running locally.")
-
+    # Run the app (no ngrok required for Render)
     app.run(host='0.0.0.0', port=5000, debug=True)
+
